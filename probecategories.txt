@@ -1,0 +1,90 @@
+probe1	category
+a pet kitten	animal
+a frog	animal
+a lion	animal
+your pet dog	animal
+a worm	animal
+a zebra	animal
+a pet dog	animal
+your pet kitten	animal
+a panda	animal
+a rock	object
+a pencil	object
+a baseball	object
+a candle	object
+a stapler	object
+an umbrella	object
+a chocolate bar	object
+a toothbrush	object
+a water bottle	object
+a mailbox	object
+a pair of sunglasses	object
+a key	object
+a raincoat	object
+a teddy bear	object
+a bag of old clothes	object
+a book	object
+a bottle of wine	object
+a pair of shoes	object
+a graduation cap	object
+a diary	object
+a kayak	object
+a baby blanket	object
+a birthday present	object
+a brand new bike	object
+a motorcycle	object
+a passport	object
+an antibiotic	object
+your family photograph	object
+a diamond	object
+your wallet	object
+an artificially intelligent computer	object
+your cellphone	object
+a hydro electric plant	object
+your laptop	object
+a wedding ring	object
+a year's supply of antibiotics	object
+your car	object
+a college diploma	object
+a town's water reservior	object
+"$1,000,000 cash"	object
+a pedophile	person
+a terrorist	person
+a rapist	person
+an assassin	person
+a thief	person
+a dead body	person
+a gang member	person
+a convict	person
+an addict	person
+a congressman	person
+a celebrity	person
+a waitress	person
+a billionaire	person
+an astronaut	person
+a homeless adult	person
+a judge	person
+a coworker	person
+a college student	person
+a teenager	person
+a person with cancer	person
+a blind person	person
+an adult	person
+a toddler	person
+an elderly person	person
+a kindergartener	person
+a police officer	person
+a teacher	person
+a soldier	person
+a child	person
+an infant	person
+your aunt	person
+your cousin	person
+your uncle	person
+a newborn baby	person
+your friend	person
+your sibling	person
+your father	person
+your grandfather	person
+your grandmother	person
+your mother	person
