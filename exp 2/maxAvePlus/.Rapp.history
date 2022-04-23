@@ -1,0 +1,12 @@
+source("mergeQCEdatafiles.r")
+source("datingVarNumDataPrep.r")
+data.raw$sn
+data.raw[data.raw$sn== "1002_42732_1881506241",trial]
+data.raw[data.raw$sn== "1002_42732_1881506241","trial"]
+source("datingVarNumDataPrep.r")
+source("datingVarNumDataPrep.r")
+source("datingVarNumDataPrep.r")
+source("datingVarNumDataPrep.r")
+source("peopleVarNumDataPrep.r")
+source("peopleVarNumDataPrep.r")
+source("peopleVarNumDataPrep.r")
