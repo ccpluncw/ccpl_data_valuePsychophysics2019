@@ -7,18 +7,6 @@
 #in this model: positive coefficients for the "s" parameter indicate a bias toward the "keep" boundary and negative coefficients indicate a bias toward the "donate" boundary
 grpVars <- c("defaultKilled","peopleQuantity")
 
-#fixedNSD
-#Add NSD as a fixed parameter (NSD = 1)
-#Here I group by the three variables but add not effects for them.  This will split the data properly
-  columnName <- NULL
-  df.code <- NULL
-  GroupByVariables <- grpVars
-  parameter <- "nSD"
-  ParameterName <- "nSD"
-  parameterBounds <- c(1, 1, 0.25)
-
-  fixedNSD  <- rrwCreateParameterEffect(parameter = parameter, columnName = columnName, ParameterName = ParameterName, parameterBounds = parameterBounds, df.code = df.code, GroupByVariables = GroupByVariables)
-
 #freeNSD
 #Add NSD as a fixed parameter (NSD = 1)
 #Here I group by the three variables but add not effects for them.  This will split the data properly
@@ -54,7 +42,7 @@ grpVars <- c("defaultKilled","peopleQuantity")
   GroupByVariables <- grpVars
   parameter <- "b"
   ParameterName <- "bConstant"
-  parameterBounds <- c(100, 5, 1)
+  parameterBounds <- c(200, 5, 1)
 
   freeB  <- rrwCreateParameterEffect(parameter = parameter, columnName = columnName, ParameterName = ParameterName, parameterBounds = parameterBounds, df.code = df.code, GroupByVariables = GroupByVariables)
 
@@ -70,7 +58,7 @@ grpVars <- c("defaultKilled","peopleQuantity")
     GroupByVariables <- grpVars
     parameter <- "vc"
     ParameterName <- "vConstant"
-    parameterBounds <- c(0.35, -0.35, 0.001)
+    parameterBounds <- c(5, -5, 0.01)
 
   freeVC <- rrwCreateParameterEffect(parameter = parameter, columnName = columnName, ParameterName = ParameterName, parameterBounds = parameterBounds, df.code = df.code, GroupByVariables = GroupByVariables)
 
@@ -88,25 +76,7 @@ grpVars <- c("defaultKilled","peopleQuantity")
       GroupByVariables <- grpVars
       ParameterName <- "sPeopleQuantity"
       parameter <- "s"
-      parameterBounds <- c(0.8, -0.8, 0.001)
-
-    peopleQuantitySE  <- rrwCreateParameterEffect(parameter = parameter, columnName = columnName, ParameterName = ParameterName, parameterBounds = parameterBounds, df.code = df.code, GroupByVariables = GroupByVariables)
-
-    #peopleQuantityVC
-    #add value change model
-      x1 <- "peopleQuantity == 'HVO_2-LVO_1'"
-      v1 <- 1
-      x2 <- "peopleQuantity == 'HVO_1-LVO_2'"
-      v2 <- -1
-      x3 <- "default"
-      v3 <- 0
-
-    columnName <- "peopleQuantityVCColumn"
-    df.code <- data.frame(logic = c(x1,x2,x3), value = c(v1,v2,v3))
-    GroupByVariables <- grpVars
-    ParameterName <- "vPeopleQuantity"
-    parameter <- "vc"
-    parameterBounds <- c(0.25, -0.25, 0.001)
+      parameterBounds <- c(0.9, -0.9, 0.001)
 
     peopleQuantityVC  <- rrwCreateParameterEffect(parameter = parameter, columnName = columnName, ParameterName = ParameterName, parameterBounds = parameterBounds, df.code = df.code, GroupByVariables = GroupByVariables)
 
@@ -124,7 +94,7 @@ grpVars <- c("defaultKilled","peopleQuantity")
     GroupByVariables <- grpVars
     ParameterName <- "bPeopleQuantity"
     parameter <- "b"
-    parameterBounds <- c(100, 0, 1)
+    parameterBounds <- c(200, -200, 1)
 
     peopleQuantityB  <- rrwCreateParameterEffect(parameter = parameter, columnName = columnName, ParameterName = ParameterName, parameterBounds = parameterBounds, df.code = df.code, GroupByVariables = GroupByVariables)
 
@@ -150,7 +120,7 @@ grpVars <- c("defaultKilled","peopleQuantity")
       #this is the parameter name for the RRW model. There are specific names: s, b, nSD, db, da, vc.
       parameter <- "s"
       #These are the bounds of the parameter values: c(high, low, interval)
-      parameterBounds <- c(0.8, -0.8, 0.001)
+      parameterBounds <- c(0.9, -0.9, 0.001)
 
     #add them to an existing model: here we add them to the simple model to create the overall Start Effect Model
     defaultKilledSE  <- rrwCreateParameterEffect(parameter = parameter, columnName = columnName, ParameterName = ParameterName, parameterBounds = parameterBounds, df.code = df.code, GroupByVariables = GroupByVariables)
@@ -167,56 +137,30 @@ simpleModelList <- rrwAddParameterEffectListToRRWModel(simpleModelList, c(freeNS
 #single biases
 dkSEModelList <- rrwAddParameterEffectListToRRWModel(simpleModelList, c(defaultKilledSE))
 
-pqSEModelList <- rrwAddParameterEffectListToRRWModel(simpleModelList, c(peopleQuantitySE))
-
 pqBModelList <- rrwAddParameterEffectListToRRWModel(simpleModelList, c(peopleQuantityB))
 
 pqVCModelList <- rrwAddParameterEffectListToRRWModel(simpleModelList, c(peopleQuantityVC))
 
 #two way biases
-pqSEdkSEModelList <- rrwAddParameterEffectListToRRWModel(dkSEModelList, c(peopleQuantitySE))
-
 pqBdkSEModelList <- rrwAddParameterEffectListToRRWModel(dkSEModelList, c(peopleQuantityB))
 
 pqVCdkSEModelList <- rrwAddParameterEffectListToRRWModel(dkSEModelList, c(peopleQuantityVC))
 
-pqBpqSEModelList <- rrwAddParameterEffectListToRRWModel(pqSEModelList, c(peopleQuantityB))
-
-pqVCpqSEModelList <- rrwAddParameterEffectListToRRWModel(pqSEModelList, c(peopleQuantityVC))
-
 pqVCpqBModelList <- rrwAddParameterEffectListToRRWModel(pqBModelList, c(peopleQuantityVC))
 
 #three way biases
-pqBpqSEdkSEModelList <- rrwAddParameterEffectListToRRWModel(pqSEdkSEModelList, c(peopleQuantityB))
-
-pqVCpqSEdkSEModelList <- rrwAddParameterEffectListToRRWModel(pqSEdkSEModelList, c(peopleQuantityVC))
-
 pqVCpqBdkSEModelList <- rrwAddParameterEffectListToRRWModel(pqBdkSEModelList, c(peopleQuantityVC))
-
-pqVCpqSEpqBModelList <- rrwAddParameterEffectListToRRWModel(pqBpqSEModelList, c(peopleQuantityVC))
-
-#four way biases
-
-pqVCpqSEpqBdkSEModelList <- rrwAddParameterEffectListToRRWModel(pqBpqSEdkSEModelList, c(peopleQuantityVC))
 
 
 
 allModels <- list(simpleModelList= simpleModelList,
   dkSEModelList = dkSEModelList,
-  pqSEModelList=pqSEModelList,
   pqBModelList=pqBModelList,
   pqVCModelList = pqVCModelList,
-  pqSEdkSEModelList = pqSEdkSEModelList,
   pqBdkSEModelList = pqBdkSEModelList,
   pqVCdkSEModelList = pqVCdkSEModelList,
-  pqBpqSEModelList = pqBpqSEModelList,
-  pqVCpqSEModelList = pqVCpqSEModelList,
   pqVCpqBModelList = pqVCpqBModelList,
-  pqBpqSEdkSEModelList = pqBpqSEdkSEModelList,
-  pqVCpqSEdkSEModelList = pqVCpqSEdkSEModelList,
   pqVCpqBdkSEModelList = pqVCpqBdkSEModelList,
-  pqVCpqSEpqBModelList = pqVCpqSEpqBModelList,
-  pqVCpqSEpqBdkSEModelList = pqVCpqSEpqBdkSEModelList
 )
 
 allFixedModels <- NULL

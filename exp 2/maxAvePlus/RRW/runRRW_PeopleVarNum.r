@@ -4,6 +4,7 @@ library(RRW)
 library(smartGridSearch)
 library(chutils)
 
+ExpName <- "pairs"
 test <- FALSE
 #use multicore
 useMultiCore <- TRUE
@@ -37,6 +38,7 @@ optBoundLoops <- ifelse (test, 4, 10)
 optParamListN <- 10
 #the number of simulations to average using the final parameters.
 numSimsToAverage <- 40
+appendRunStats <- FALSE
 ######################################################
 
 mainDir <- getwd()
@@ -49,37 +51,59 @@ analysisReadyData$defaultKilled <- ifelse(analysisReadyData$direct.xVy < 0 , "de
 
 analysisReadyData$peopleQuantity<-paste("HVO_",analysisReadyData$HVOq,"-LVO_", analysisReadyData$LVOq, sep="")
 
-#analysisReadyData$peopleQuantity<-ifelse(analysisReadyData$peopleQuantity == "HVO_1-LVO_1" | analysisReadyData$peopleQuantity == "HVO_2-LVO_2", "HVO_same-LVO_same", analysisReadyData$peopleQuantity)
-
 tmp.df<-analysisReadyData
 
 source("modelspecs_PeopleVarNum.r")
 modelNames <- names(allModels)
 
+fileTagShortName <- paste(ExpName, sep="_")
+fileTagOutStats <- paste(format(Sys.time(), "%b_%d_%Y_%H-%M"), fileTagShortName, sep="_")
+
 ### this loop runs the smartGridSearch to optimize free parameters
+df.runStats <- NULL
 if(runSmartGridSearch) {
   for (i in modelNames) {
     subDirExists <- ch.newDir (mainDir, i)
+		if(subDirExists == TRUE) {
+			#if a run already exists, then add the output to the previous run
+			appendRunStats <- TRUE
+		}
     #if the sub directory does NOT exist or you do NOT want to skip models, then run the analysis
     if(subDirExists == FALSE | skipModelsWithExistingDirs == FALSE) {
       modDir <- getwd()
       setwd(modDir)
 
       tmpModelList <- allModels[[i]]
-
+			
       #create a file tag that will be used to save files.  it will be time and date stamped
-      fileTagShortName <- paste("RespBias", i, sep="_")
+      fileTagShortName <- paste(ExpName, i, sep="_")
       fileTag <- paste(format(Sys.time(), "%b_%d_%Y_%H-%M"), fileTagShortName, sep="_")
 
-      df.fitted <- rrwRunSmartGridSearch(tmp.df, tmpModelList, minN = minN, dataOverlapCol = "overlapRound", RwSamplesCol = "Q50", dataRtCol = "res.RT", correctCol = "correct01", correctVals = c(1,0), loopsPerRWstep = loopsPerRWstep, minimizeStat = minimizeStat, equalizeRTandPhit = equalizeRTandPhit, numLoops = numGridLoops, numIntervals = numGridIntervals, optParamListN = optParamListN, optBoundLoops = optBoundLoops, multicore = useMultiCore, multicorePackages = multicorePackages, numSimsToAverage = numSimsToAverage, fileTag = fileTag)
+      run.list <- rrwRunSmartGridSearch(tmp.df, tmpModelList, minN = minN, dataOverlapCol = "overlapRound", RwSamplesCol = "Q50", dataRtCol = "res.RT", correctCol = "correct01", correctVals = c(1,0), loopsPerRWstep = loopsPerRWstep, minimizeStat = minimizeStat, equalizeRTandPhit = equalizeRTandPhit, numLoops = numGridLoops, numIntervals = numGridIntervals, optParamListN = optParamListN, optBoundLoops = optBoundLoops, multicore = useMultiCore, multicorePackages = multicorePackages, numSimsToAverage = numSimsToAverage, fileTag = fileTag)
 
-      rrwPlotSGSoutput(df.fitted, tmpModelList, dataRtCol = "rt", dataPhitCol = "pHit", rtFitCol = "rtFit", pHitFitCol = "pCross", correctCol = "correct", overlapCol = "overlap", fileTag = fileTag,numSimsToPlot = numSimsToAverage)
+      df.tmp.stats <- rrwRunStatsToDataframe(run.list$runStats)
+      df.tmp.stats$model <- i
+      df.runStats <- bind_rows(df.runStats, df.tmp.stats)
+
+      rrwPlotSGSoutput(run.list$df.fitted, tmpModelList, dataRtCol = "rt", dataPhitCol = "pHit", rtFitCol = "rtFit", pHitFitCol = "pCross", correctCol = "correct", overlapCol = "overlap", fileTag = fileTag,numSimsToPlot = numSimsToAverage)
     }
+
     setwd(mainDir)
+
+    #write the runstats data after each model - just in case the computer bombs, you dont want to loose everything.
+    filename <- paste(ExpName, fileTagOutStats, "freeParameterRunStats.txt", sep="_")
+    write.table(df.runStats, filename, append = appendRunStats, col.names=T, row.names=F, quote=F, sep="\t")
+
   }
 }
 
+#write the final free parameter runstats dataset
+filename <- paste(ExpName, fileTagOutStats, "freeParameterRunStats.txt", sep="_")
+write.table(df.runStats, filename, append = appendRunStats, col.names=T, row.names=F, quote=F, sep="\t")
+
+
 ### this loop runs the fits fixed parameters from previous runs
+df.runStats <- NULL
 if(!is.null(allFixedModels)) {
   modelNames <- names(allFixedModels)
 
@@ -91,16 +115,29 @@ if(!is.null(allFixedModels)) {
       setwd(modDir)
 
       tmpModelList <- allFixedModels[[i]]
-
-      #create a file tag that will be used to save files.  it will be time and date stamped
-      fileTagShortName <- paste("terrorist", i, sep="_")
+      
+			#create a file tag that will be used to save files.  it will be time and date stamped
+      fileTagShortName <- paste(ExpName, i, sep="_")
       fileTag <- paste(format(Sys.time(), "%b_%d_%Y_%H-%M"), fileTagShortName, sep="_")
 
       #do this to run a set of fixed parameters.  Remember, the rrwModelList should have the upperBound==lowerBound
-      df.fitted <- rrwRunWithFixedParameters(tmp.df, tmpModelList, minN = minN, dataOverlapCol = "overlapRound", RwSamplesCol = "Q50", dataRtCol = "res.RT", correctCol = "correct01", correctVals = c(1,0), loopsPerRWstep = loopsPerRWstep, minimizeStat = minimizeStat, equalizeRTandPhit = equalizeRTandPhit, numSimsToAverage = numSimsToAverage, fileTag = fileTag)
+      run.list <- rrwRunWithFixedParameters(tmp.df, tmpModelList, minN = minN, dataOverlapCol = "overlapRound", RwSamplesCol = "Q50", dataRtCol = "res.RT", correctCol = "correct01", correctVals = c(1,0), loopsPerRWstep = loopsPerRWstep, minimizeStat = minimizeStat, equalizeRTandPhit = equalizeRTandPhit, numSimsToAverage = numSimsToAverage, fileTag = fileTag)
 
-      rrwPlotSGSoutput(df.fitted, tmpModelList, dataRtCol = "rt", dataPhitCol = "pHit", rtFitCol = "rtFit", pHitFitCol = "pCross", correctCol = "correct", overlapCol = "overlap", fileTag = fileTag,numSimsToPlot = numSimsToAverage)
+      df.tmp.stats <- rrwRunStatsToDataframe(run.list$runStats)
+      df.tmp.stats$model <- i
+      df.runStats <- bind_rows(df.runStats, df.tmp.stats)
+
+
+      rrwPlotSGSoutput(run.list$df.fitted, tmpModelList, dataRtCol = "rt", dataPhitCol = "pHit", rtFitCol = "rtFit", pHitFitCol = "pCross", correctCol = "correct", overlapCol = "overlap", fileTag = fileTag,numSimsToPlot = numSimsToAverage)
     }
     setwd(mainDir)
+
+    #write the runstats data after each model - just in case the computer bombs, you dont want to loose everything.
+    filename <- paste(ExpName, fileTagOutStats, "fixedParameterRunStats.txt", sep="_")
+    write.table(df.runStats, filename, append = appendRunStats, col.names=T, row.names=F, quote=F, sep="\t")
   }
 }
+
+#write the final fixed parameter runstats dataset
+filename <- paste(ExpName, fileTagOutStats, "fixedParameterRunStats.txt", sep="_")
+write.table(df.runStats, filename, append = appendRunStats, col.names=T, row.names=F, quote=F, sep="\t")

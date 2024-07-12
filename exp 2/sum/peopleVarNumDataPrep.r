@@ -38,7 +38,7 @@ data.ovrlp <-read.table(params$valueOverlapDataFile, header=T, sep="\t", quote="
 data.raw <- data.raw[data.raw$trial_type >=1, ]
 
 ### do Prep analysis
-processedData <- ch.moralsDataPrep(data.raw, "sn", "keybRT", "overlap", "direction", "trial", "keyDef", respChoiceVal = c("Yes", "No"), item1cols = c("IA.1", "IA.2"), item2cols = c("IB.1", "IB.2"), overlapItem1cols = c("IA1", "IA2"), overlapItem2cols = c("IB1", "IB2"), statsOutputFile = statsOutputFile, params = params, overlapDataIsComplete = overlapDataIsComplete)
+processedData <- ch.moralsDataPrep(data.raw, data.ovrlp, "sn", "keybRT", "overlap", "direction", "trial", "keyDef", respChoiceVal = c("Yes", "No"), item1cols = c("IA.1", "IA.2"), item2cols = c("IB.1", "IB.2"), overlapItem1cols = c("IA1", "IA2"), overlapItem2cols = c("IB1", "IB2"), statsOutputFile = statsOutputFile, params = params, overlapDataIsComplete = overlapDataIsComplete)
 
 ### get HVO quantity
 processedData$HVOq <- ifelse((processedData$QuantOption1 == 2 & processedData$direct.xVy == 1) | (processedData$QuantOption2 == 2 & processedData$direct.xVy == -1) , 2, 1)
@@ -64,9 +64,9 @@ write.table(df.dPrime, file="df.dPrime.txt", append=FALSE, quote=FALSE, sep="\t"
 #### For experiments with catagory variable manipulations (e.g., different groups), do an analysis
 #### by group
 #### this one is by side
-    grpFitModels <- ch.moralsPlotsByGrpsAndGetModels(analysisReadyData.gp, c("QuantOption1", "QuantOption2"), resCol, "overlapRound", "keyDef", yesNoVal = c("Yes", "No"), "correct", c(1,0), "targetPresent", c(TRUE,FALSE), useTwoParameterModel = TRUE, params = params, minNperOverlap = 0)
+    grpFitModels <- ch.moralsPlotsByGrpsAndGetModels(analysisReadyData.gp, c("QuantOption1", "QuantOption2"), resCol, "overlapRound", "keyDef", yesNoVal = c("Yes", "No"), "correct", c(1,0), "targetPresent", c(TRUE,FALSE), useTwoParameterModel = TRUE, params = params, minNperOverlap = params$minOverlapN)
     #### this one is by side
-    grpFitModels.2 <- ch.moralsPlotsByGrpsAndGetModels(analysisReadyData.gp, c("HVOq", "LVOq"), resCol, "overlapRound", "keyDef", yesNoVal = c("Yes", "No"), "correct", c(1,0), "targetPresent", c(TRUE,FALSE), useTwoParameterModel = TRUE, params = params, minNperOverlap = 0)
+    grpFitModels.2 <- ch.moralsPlotsByGrpsAndGetModels(analysisReadyData.gp, c("HVOq", "LVOq"), resCol, "overlapRound", "keyDef", yesNoVal = c("Yes", "No"), "correct", c(1,0), "targetPresent", c(TRUE,FALSE), useTwoParameterModel = TRUE, params = params, minNperOverlap = params$minOverlapN)
     ### and plot the data
     setwd(gpDir)
     ch.moralsPlotFitsByGrps(grpFitModels, c("QuantOption1", "QuantOption2"), "overlapRound", analysisReadyData.gp, filenameID = params$dt.set)

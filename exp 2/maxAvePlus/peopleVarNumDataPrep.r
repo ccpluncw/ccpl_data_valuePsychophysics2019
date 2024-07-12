@@ -38,7 +38,7 @@ data.ovrlp <-read.table(params$valueOverlapDataFile, header=T, sep="\t", quote="
 data.raw <- data.raw[data.raw$trial_type >=1, ]
 
 ### do Prep analysis
-processedData <- ch.moralsDataPrep(data.raw, "sn", "keybRT", "overlap", "direction", "trial", "keyDef", respChoiceVal = c("Yes", "No"), item1cols = c("IA.1", "IA.2"), item2cols = c("IB.1", "IB.2"), overlapItem1cols = c("IA1", "IA2"), overlapItem2cols = c("IB1", "IB2"), statsOutputFile = statsOutputFile, params = params, overlapDataIsComplete = overlapDataIsComplete)
+processedData <- ch.moralsDataPrep(data.raw, data.ovrlp, "sn", "keybRT", "overlap", "direction", "trial", "keyDef", respChoiceVal = c("Yes", "No"), item1cols = c("IA.1", "IA.2"), item2cols = c("IB.1", "IB.2"), overlapItem1cols = c("IA1", "IA2"), overlapItem2cols = c("IB1", "IB2"), statsOutputFile = statsOutputFile, params = params, overlapDataIsComplete = overlapDataIsComplete)
 
 ### get HVO quantity
 processedData$HVOq <- ifelse((processedData$QuantOption1 == 2 & processedData$direct.xVy == 1) | (processedData$QuantOption2 == 2 & processedData$direct.xVy == -1) , 2, 1)
